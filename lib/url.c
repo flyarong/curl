@@ -2377,7 +2377,7 @@ static CURLcode parse_proxy(struct Curl_easy *data,
   }
   else {
     failf(data, "Unsupported proxy syntax in \'%s\'", proxy);
-    result = CURLE_BAD_FUNCTION_ARGUMENT;
+    result = CURLE_COULDNT_RESOLVE_PROXY;
     goto error;
   }
 
