@@ -10,7 +10,7 @@
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
-# are also available at https://curl.haxx.se/docs/copyright.html.
+# are also available at https://curl.se/docs/copyright.html.
 #
 # You may opt to use, copy, modify, merge, publish, distribute and/or sell
 # copies of the Software, and permit persons to whom the Software is
@@ -21,20 +21,22 @@
 #
 """Server for testing SMB"""
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 # NOTE: the impacket configuration is not unicode_literals compatible!
+
 import argparse
+import logging
 import os
 import sys
-import logging
 import tempfile
+
+# Import our curl test data helper
+from util import ClosingFileHandler, TestData
+
 if sys.version_info.major >= 3:
     import configparser
 else:
     import ConfigParser as configparser
-
-# Import our curl test data helper
-import curl_test_data
 
 # impacket needs to be installed in the Python environment
 try:
@@ -43,10 +45,10 @@ except ImportError:
     sys.stderr.write('Python package impacket needs to be installed!\n')
     sys.stderr.write('Use pip or your package manager to install it.\n')
     sys.exit(1)
-from impacket import smbserver as imp_smbserver
 from impacket import smb as imp_smb
-from impacket.nt_errors import (STATUS_ACCESS_DENIED, STATUS_SUCCESS,
-                                STATUS_NO_SUCH_FILE)
+from impacket import smbserver as imp_smbserver
+from impacket.nt_errors import (STATUS_ACCESS_DENIED, STATUS_NO_SUCH_FILE,
+                                STATUS_SUCCESS)
 
 log = logging.getLogger(__name__)
 SERVER_MAGIC = "SERVER_MAGIC"
@@ -61,8 +63,11 @@ def smbserver(options):
     """
     if options.pidfile:
         pid = os.getpid()
+        # see tests/server/util.c function write_pidfile
+        if os.name == "nt":
+            pid += 65536
         with open(options.pidfile, "w") as f:
-            f.write("{0}".format(pid))
+            f.write(str(pid))
 
     # Here we write a mini config for the server
     smb_config = configparser.ConfigParser()
@@ -117,7 +122,7 @@ class TestSmbServer(imp_smbserver.SMBSERVER):
                                          config_parser=config_parser)
 
         # Set up a test data object so we can get test data later.
-        self.ctd = curl_test_data.TestData(test_data_directory)
+        self.ctd = TestData(test_data_directory)
 
         # Override smbComNtCreateAndX so we can pretend to have files which
         # don't exist.
@@ -267,7 +272,11 @@ class TestSmbServer(imp_smbserver.SMBSERVER):
 
         if requested_filename == VERIFIED_REQ:
             log.debug("[SMB] Verifying server is alive")
-            contents = VERIFIED_RSP.format(pid=os.getpid()).encode('utf-8')
+            pid = os.getpid()
+            # see tests/server/util.c function write_pidfile
+            if os.name == "nt":
+                pid += 65536
+            contents = VERIFIED_RSP.format(pid=pid).encode('utf-8')
 
         self.write_to_fid(fid, contents)
         return fid, filename
@@ -346,7 +355,7 @@ def setup_logging(options):
 
     # Write out to a logfile
     if options.logfile:
-        handler = logging.FileHandler(options.logfile, mode="w")
+        handler = ClosingFileHandler(options.logfile)
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
         root_logger.addHandler(handler)

@@ -10,7 +10,7 @@
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
-# are also available at https://curl.haxx.se/docs/copyright.html.
+# are also available at https://curl.se/docs/copyright.html.
 #
 # You may opt to use, copy, modify, merge, publish, distribute and/or sell
 # copies of the Software, and permit persons to whom the Software is
@@ -23,10 +23,14 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+
 import argparse
+import logging
 import os
 import sys
-import logging
+
+from util import ClosingFileHandler
+
 if sys.version_info.major >= 3:
     import socketserver
 else:
@@ -49,6 +53,9 @@ def telnetserver(options):
     """
     if options.pidfile:
         pid = os.getpid()
+        # see tests/server/util.c function write_pidfile
+        if os.name == "nt":
+            pid += 65536
         with open(options.pidfile, "w") as f:
             f.write(str(pid))
 
@@ -86,7 +93,11 @@ class NegotiatingTelnetHandler(socketserver.BaseRequestHandler):
 
             if VERIFIED_REQ.encode('utf-8') in data:
                 log.debug("Received verification request from test framework")
-                response = VERIFIED_RSP.format(pid=os.getpid())
+                pid = os.getpid()
+                # see tests/server/util.c function write_pidfile
+                if os.name == "nt":
+                    pid += 65536
+                response = VERIFIED_RSP.format(pid=pid)
                 response_data = response.encode('utf-8')
             else:
                 log.debug("Received normal request - echoing back")
@@ -306,7 +317,7 @@ def setup_logging(options):
 
     # Write out to a logfile
     if options.logfile:
-        handler = logging.FileHandler(options.logfile, mode="w")
+        handler = ClosingFileHandler(options.logfile)
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
         root_logger.addHandler(handler)

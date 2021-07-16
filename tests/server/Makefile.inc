@@ -9,7 +9,7 @@
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
-# are also available at https://curl.haxx.se/docs/copyright.html.
+# are also available at https://curl.se/docs/copyright.html.
 #
 # You may opt to use, copy, modify, merge, publish, distribute and/or sell
 # copies of the Software, and permit persons to whom the Software is
@@ -20,21 +20,28 @@
 #
 ###########################################################################
 
-noinst_PROGRAMS = getpart resolve rtspd sockfilt sws tftpd fake_ntlm socksd disabled
+noinst_PROGRAMS = getpart resolve rtspd sockfilt sws tftpd fake_ntlm    \
+ socksd disabled mqttd
 
 CURLX_SRCS = \
  ../../lib/mprintf.c \
  ../../lib/nonblock.c \
  ../../lib/strtoofft.c \
  ../../lib/warnless.c \
- ../../lib/curl_ctype.c
+ ../../lib/curl_ctype.c \
+ ../../lib/dynbuf.c \
+ ../../lib/strdup.c \
+ ../../lib/curl_multibyte.c
 
 CURLX_HDRS = \
  ../../lib/curlx.h \
  ../../lib/nonblock.h \
  ../../lib/strtoofft.h \
  ../../lib/warnless.h \
- ../../lib/curl_ctype.h
+ ../../lib/curl_ctype.h \
+ ../../lib/dynbuf.h \
+ ../../lib/strdup.h \
+ ../../lib/curl_multibyte.h
 
 USEFUL = \
  getpart.c \
@@ -77,6 +84,12 @@ socksd_SOURCES = $(CURLX_SRCS) $(CURLX_HDRS) $(USEFUL) $(UTIL) \
  ../../lib/inet_pton.c
 socksd_LDADD = @CURL_NETWORK_AND_TIME_LIBS@
 socksd_CFLAGS = $(AM_CFLAGS)
+
+mqttd_SOURCES = $(CURLX_SRCS) $(CURLX_HDRS) $(USEFUL) $(UTIL) \
+ server_sockaddr.h mqttd.c \
+ ../../lib/inet_pton.c
+mqttd_LDADD = @CURL_NETWORK_AND_TIME_LIBS@
+mqttd_CFLAGS = $(AM_CFLAGS)
 
 sws_SOURCES = $(CURLX_SRCS) $(CURLX_HDRS) $(USEFUL) $(UTIL) \
  server_sockaddr.h \
