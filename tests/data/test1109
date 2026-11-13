@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="US-ASCII"?>
 <testcase>
 # Test that the fragment is not send as part of the path.
 <info>
@@ -7,7 +8,6 @@ CURLOPT_URL
 </keywords>
 </info>
 
-# Server-side
 <reply>
 <data>
 HTTP/1.1 200 OK
@@ -17,28 +17,23 @@ hello
 </data>
 </reply>
 
-# Client-side
 <client>
 <server>
 http
 </server>
- <name>
+<name>
 HTTP GET with URL that contains fragment after the path
- </name>
- <command>
-http://%HOSTIP:%HTTPPORT/1109#test
+</name>
+<command>
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER#test
 </command>
 </client>
 
-
-# Verify data after the test has been "shot"
 <verify>
-<strip>
-^User-Agent:.*
-</strip>
-<protocol>
-GET /1109 HTTP/1.1
+<protocol crlf="headers">
+GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
+User-Agent: curl/%VERSION
 Accept: */*
 
 </protocol>

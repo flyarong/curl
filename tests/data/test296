@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="US-ASCII"?>
 <testcase>
 <info>
 <keywords>
@@ -8,30 +9,26 @@ CWD
 multicwd
 </keywords>
 </info>
-#
-# Server-side
 <reply>
 <data>
 bla bla bla
 </data>
 </reply>
 
-# Client-side
 <client>
 <server>
 ftp
 </server>
- <name>
+<name>
 FTP CWD with --ftp-method multicwd
- </name>
- <command>
---ftp-method multicwd ftp://%HOSTIP:%FTPPORT/first/second/third/296
+</name>
+<command>
+--ftp-method multicwd ftp://%HOSTIP:%FTPPORT/first/second/third/%TESTNUMBER
 </command>
 </client>
 
-# Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD
@@ -40,9 +37,8 @@ CWD second
 CWD third
 EPSV
 TYPE I
-SIZE 296
-RETR 296
-QUIT
+SIZE %TESTNUMBER
+RETR %TESTNUMBER
 </protocol>
 </verify>
 </testcase>

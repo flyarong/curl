@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="US-ASCII"?>
 <testcase>
 <info>
 <keywords>
@@ -7,8 +8,6 @@ globbing
 </keywords>
 </info>
 
-#
-# Server-side
 <reply>
 <data>
 HTTP/1.1 200 OK
@@ -20,7 +19,6 @@ Content-Type: text/html
 </data>
 </reply>
 
-# Client-side
 <client>
 <server>
 http
@@ -29,18 +27,15 @@ http
 Verify URL globbing ignores []
 </name>
 <command>
-"http://%HOSTIP:%HTTPPORT/we/want/[]/page/1290"
+"http://%HOSTIP:%HTTPPORT/we/want/[]/page/%TESTNUMBER"
 </command>
 </client>
 
-# Verify data after the test has been "shot"
 <verify>
-<strip>
-^User-Agent:.*
-</strip>
-<protocol>
-GET /we/want/[]/page/1290 HTTP/1.1
+<protocol crlf="headers">
+GET /we/want/[]/page/%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
+User-Agent: curl/%VERSION
 Accept: */*
 
 </protocol>
